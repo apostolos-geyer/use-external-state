@@ -6,4 +6,3 @@ packages/**/dist-ts
 coverage
 *.log
 .DS_Store
-pnpm-lock.yaml
