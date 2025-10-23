@@ -18,7 +18,7 @@ React hook for managing state that lives outside the component tree while stayin
 pnpm add @1apostoli/use-external-state
 
 # optional Next.js adapter
-pnpm add @1apostoli/use-external-state/next
+pnpm add @1apostoli/use-external-state-next
 ```
 
 Peer dependencies: `react@^18.2.0` (core) and `next@>=13.4.0` when using the Next.js adapter.
@@ -67,7 +67,7 @@ export function ThemeToggle() {
 ```tsx
 'use client';
 
-import { QueryParameterStore } from '@1apostoli/use-external-state/next';
+import { QueryParameterStore } from '@1apostoli/use-external-state-next';
 import { z } from 'zod';
 
 const searchSchema = z.object({
@@ -127,12 +127,12 @@ Cookies are polled every second for external changes. Set `pollIntervalMs: 0` to
 
 ### Adapters
 
-| Adapter                                                                                                           | Description                                              |
-| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `LocalStorageStore({ key, serializer?, storage? })`                                                               | JSON by default, cross-tab updates via `storage` events. |
-| `SessionStorageStore({ key, serializer?, storage? })`                                                             | Same API as local storage.                               |
-| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                | Serialises as URL-encoded JSON by default.               |
-| `@1apostoli/use-external-state/next` `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })` | Works with Next.js App Router (`next/navigation`).       |
+| Adapter                                                                                                            | Description                                              |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| `LocalStorageStore({ key, serializer?, storage? })`                                                                | JSON by default, cross-tab updates via `storage` events. |
+| `SessionStorageStore({ key, serializer?, storage? })`                                                              | Same API as local storage.                               |
+| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                 | Serialises as URL-encoded JSON by default.               |
+| `@1apostoli/use-external-state-next` `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })` | Works with Next.js App Router (`next/navigation`).       |
 
 ### Debouncer helper
 
@@ -171,7 +171,7 @@ All demos live under `examples/`. Install dependencies at the repo root, then ru
 - `pnpm dev:basic` – Vite app using `LocalStorageStore`
 - `pnpm dev:session` – Vite app persisting a form draft in `sessionStorage`
 - `pnpm dev:cookie` – Vite app demonstrating `CookieStore`
-- `pnpm --filter next-query-params dev` – Next.js App Router example using `@1apostoli/use-external-state/next`
+- `pnpm --filter next-query-params dev` – Next.js App Router example using `@1apostoli/use-external-state-next`
 - `pnpm --filter react-custom-query dev` – Vite app with a hand-rolled query-parameter adapter
 
 Each Vite demo automatically rebuilds the workspace package before launching. See `examples/README.md` for more details.

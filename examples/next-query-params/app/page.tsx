@@ -1,17 +1,16 @@
 'use client';
 
 import { Suspense, type JSX } from 'react';
-import { QueryParameterStore } from '@1apostoli/use-external-state/next';
+import { QueryParameterStore } from '@1apostoli/use-external-state-next';
 import { useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
-
 
 const store = QueryParameterStore<Filters>({
   history: 'replace',
 });
 
 const categories = ['all', 'books', 'electronics', 'fashion', 'home'] as const;
-type Category = typeof categories[number]
+type Category = (typeof categories)[number];
 const filtersSchema = z.object({
   search: z.string().default(''),
   category: z.enum(categories).default('all'),
@@ -19,7 +18,6 @@ const filtersSchema = z.object({
   maxPrice: z.coerce.number().min(0).default(500),
   includeOutOfStock: z.coerce.boolean().default(false),
 });
-
 
 type Filters = z.output<typeof filtersSchema>;
 
@@ -38,9 +36,8 @@ function FiltersPage(): JSX.Element {
       <h1>Next.js Query Parameters + Zod</h1>
       <p>
         This page keeps filters in sync with the URL search params using{' '}
-        <code>@1apostoli/use-external-state/next</code>.
+        <code>@1apostoli/use-external-state-next</code>.
       </p>
-
 
       <label style={{ display: 'grid', gap: 4 }}>
         <span>Search</span>

@@ -9,7 +9,7 @@
     "paths": {
       "@1apostoli/use-external-state": ["../../packages/use-external-state/src/index.ts"],
       "@1apostoli/use-external-state/*": ["../../packages/use-external-state/src/*"],
-      "@1apostoli/use-external-state/next": [
+      "@1apostoli/use-external-state-next": [
         "../../packages/use-external-state-next/src/index.ts"
       ]
     },

@@ -9,7 +9,6 @@
     "paths": {
       "next/navigation": ["./types/next-navigation.d.ts"],
       "@1apostoli/use-external-state": ["../use-external-state/src/"]
-
     },
     "composite": false,
     "incremental": false,

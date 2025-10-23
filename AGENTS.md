@@ -3,7 +3,7 @@
 This repository ships two workspace packages:
 
 - `@1apostoli/use-external-state`: core hook + browser storage adapters (Zod-only)
-- `@1apostoli/use-external-state/next`: query-parameter adapter for the Next.js App Router
+- `@1apostoli/use-external-state-next`: query-parameter adapter for the Next.js App Router
 
 All packages are TypeScript-first, React 18/19 friendly, and rely on Zod v4 for schema validation.
 
@@ -52,7 +52,7 @@ Examples are self-contained Vite/Next projects. Vite demos call the workspace bu
 ## Examples
 
 - `examples/react-vite`: Vite + React demos using built-in adapters.
-- `examples/next-query-params`: Next.js App Router example depending on `@1apostoli/use-external-state/next`.
+- `examples/next-query-params`: Next.js App Router example depending on `@1apostoli/use-external-state-next`.
 
 ## Release Checklist
 

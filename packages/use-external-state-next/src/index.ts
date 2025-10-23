@@ -71,7 +71,7 @@ export function QueryParameterStore<TValue>(
   } = config;
 
   return {
-    id: '@1apostoli/use-external-state/next:query-parameters',
+    id: '@1apostoli/use-external-state-next:query-parameters',
     useStore() {
       const router = useRouter();
       const pathname = usePathname();
