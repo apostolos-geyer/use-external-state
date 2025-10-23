@@ -33,16 +33,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint:all
+        run: pnpm run lint
 
       - name: Typecheck
-        run: pnpm run typecheck:all
+        run: pnpm run typecheck
 
       - name: Test
-        run: pnpm run test:all
+        run: pnpm run test
 
       - name: Build
-        run: pnpm run build:all
+        run: pnpm run build
 
       - name: Publish packages
         if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
