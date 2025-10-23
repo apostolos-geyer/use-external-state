@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "14.2.10",
-    "react": "^19.0.0",
+    "next": "^15.0.10",
+    "react": "^19.2.0",
     "react-dom": "^19.0.0",
     "@apostoli/use-external-state/next": "workspace:*",
     "@apostoli/use-external-state": "workspace:*",

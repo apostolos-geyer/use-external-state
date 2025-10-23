@@ -41,7 +41,7 @@
     "react": "^18 || ^19"
   },
   "dependencies": {
-    "@apostoli/use-external-state": "workspace:^"
+    "@apostoli/use-external-state": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",

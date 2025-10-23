@@ -2,12 +2,14 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist-ts",
-    "rootDir": ".",
+    "rootDir": "../../",
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "baseUrl": ".",
     "paths": {
-      "next/navigation": ["./types/next-navigation.d.ts"]
+      "next/navigation": ["./types/next-navigation.d.ts"],
+      "@apostoli/use-external-state": ["../use-external-state/src/"]
+
     },
     "composite": false,
     "incremental": false,
