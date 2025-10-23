@@ -1,5 +1,5 @@
 {
-  "name": "@apostoli/use-external-state",
+  "name": "@1apostoli/use-external-state",
   "version": "0.1.0",
   "description": "React hook for syncing browser-backed state with Zod validation",
   "type": "module",

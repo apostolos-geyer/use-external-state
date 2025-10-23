@@ -7,8 +7,8 @@ import type { Route } from 'next';
 import type {
   ExternalStateAdapter,
   ExternalStateStore,
-} from '@apostoli/use-external-state';
-import { createStoreEmitter } from '@apostoli/use-external-state';
+} from '@1apostoli/use-external-state';
+import { createStoreEmitter } from '@1apostoli/use-external-state';
 
 type SerializedRecord = Record<string, string | (string | null)[] | null | undefined>;
 
@@ -71,7 +71,7 @@ export function QueryParameterStore<TValue>(
   } = config;
 
   return {
-    id: '@apostoli/use-external-state/next:query-parameters',
+    id: '@1apostoli/use-external-state/next:query-parameters',
     useStore() {
       const router = useRouter();
       const pathname = usePathname();

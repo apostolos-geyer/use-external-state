@@ -56,10 +56,10 @@ importers:
 
   examples/next-query-params:
     dependencies:
-      '@apostoli/use-external-state':
+      '@1apostoli/use-external-state':
         specifier: workspace:*
         version: link:../../packages/use-external-state
-      '@apostoli/use-external-state/next':
+      '@1apostoli/use-external-state/next':
         specifier: workspace:*
         version: link:../../packages/use-external-state-next
       next:
@@ -81,7 +81,7 @@ importers:
 
   examples/react-vite:
     dependencies:
-      '@apostoli/use-external-state':
+      '@1apostoli/use-external-state':
         specifier: workspace:*
         version: link:../../packages/use-external-state
       react:
@@ -137,7 +137,7 @@ importers:
 
   packages/use-external-state-next:
     dependencies:
-      '@apostoli/use-external-state':
+      '@1apostoli/use-external-state':
         specifier: workspace:*
         version: link:../use-external-state
       next:

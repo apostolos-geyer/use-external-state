@@ -1,8 +1,8 @@
 'use client';
 
 import { Suspense, type JSX } from 'react';
-import { QueryParameterStore } from '@apostoli/use-external-state/next';
-import { useExternalState } from '@apostoli/use-external-state';
+import { QueryParameterStore } from '@1apostoli/use-external-state/next';
+import { useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 
@@ -38,7 +38,7 @@ function FiltersPage(): JSX.Element {
       <h1>Next.js Query Parameters + Zod</h1>
       <p>
         This page keeps filters in sync with the URL search params using{' '}
-        <code>@apostoli/use-external-state/next</code>.
+        <code>@1apostoli/use-external-state/next</code>.
       </p>
 
 

@@ -1,10 +1,10 @@
-# @apostoli/use-external-state
+# @1apostoli/use-external-state
 
 React hook for managing browser-backed state with Zod v4 validation. See the
 [monorepo README](../../README.md) for full documentation, API reference, and
 examples.
 
-- **Install**: `pnpm add @apostoli/use-external-state`
+- **Install**: `pnpm add @1apostoli/use-external-state`
 - **Exports**: `useExternalState`, `LocalStorageStore`, `SessionStorageStore`,
   `CookieStore`, `createDebouncer`, and keyed setter helpers.
 

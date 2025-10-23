@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { useExternalState } from '@apostoli/use-external-state';
+import { useExternalState } from '@1apostoli/use-external-state';
 import { QueryParameterStore } from '../src';
 
 type RouterCall = [href: string, options?: { scroll?: boolean }];

@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import type {
   ExternalStateAdapter,
   ExternalStateStore,
-} from '@apostoli/use-external-state';
+} from '@1apostoli/use-external-state';
 
-import { createStoreEmitter } from '@apostoli/use-external-state';
+import { createStoreEmitter } from '@1apostoli/use-external-state';
 
 interface QueryAdapterOptions<TValue> {
   history?: 'replace' | 'push';

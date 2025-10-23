@@ -1,7 +1,7 @@
 {
-  "name": "@apostoli/use-external-state/next",
+  "name": "@1apostoli/use-external-state/next",
   "version": "0.1.0",
-  "description": "Query parameter adapter for @apostoli/use-external-state in Next.js applications",
+  "description": "Query parameter adapter for @1apostoli/use-external-state in Next.js applications",
   "type": "module",
   "types": "build/legacy/index.d.ts",
   "main": "build/legacy/index.cjs",
@@ -41,7 +41,7 @@
     "react": "^18 || ^19"
   },
   "dependencies": {
-    "@apostoli/use-external-state": "workspace:*"
+    "@1apostoli/use-external-state": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",

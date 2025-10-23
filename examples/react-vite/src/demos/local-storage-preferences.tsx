@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { useExternalState, LocalStorageStore } from '@apostoli/use-external-state';
+import { useExternalState, LocalStorageStore } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 const preferencesSchema = z.object({

@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { CookieStore, useExternalState } from '@apostoli/use-external-state';
+import { CookieStore, useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 const consentSchema = z.object({

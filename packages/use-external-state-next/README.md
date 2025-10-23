@@ -1,11 +1,11 @@
-# @apostoli/use-external-state/next
+# @1apostoli/use-external-state/next
 
-Query parameter adapter for [`@apostoli/use-external-state`](https://www.npmjs.com/package/@apostoli/use-external-state) tailored to the Next.js App Router.
+Query parameter adapter for [`@1apostoli/use-external-state`](https://www.npmjs.com/package/@1apostoli/use-external-state) tailored to the Next.js App Router.
 
 ## Installation
 
 ```bash
-pnpm add @apostoli/use-external-state @apostoli/use-external-state/next
+pnpm add @1apostoli/use-external-state @1apostoli/use-external-state/next
 ```
 
 Peer dependencies: `react@^18.2.0` or `^19.0.0`, `next@>=13.4.0`.
@@ -15,8 +15,8 @@ Peer dependencies: `react@^18.2.0` or `^19.0.0`, `next@>=13.4.0`.
 ```tsx
 'use client';
 
-import { QueryParameterStore } from '@apostoli/use-external-state/next';
-import { useExternalState } from '@apostoli/use-external-state';
+import { QueryParameterStore } from '@1apostoli/use-external-state/next';
+import { useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 const searchSchema = z.object({

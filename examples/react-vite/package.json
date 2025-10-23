@@ -14,7 +14,7 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@apostoli/use-external-state": "workspace:*",
+    "@1apostoli/use-external-state": "workspace:*",
     "zod": "^4.0.1"
   },
   "devDependencies": {

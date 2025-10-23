@@ -1,7 +1,7 @@
 'use client';
 
 import type { JSX } from 'react';
-import { useExternalState } from '@apostoli/use-external-state';
+import { useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 import { useQueryParameterAdapter } from './utils/queryAdapter';

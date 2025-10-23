@@ -1,6 +1,6 @@
 export const metadata = {
-  title: '@apostoli/use-external-state • Next Query Params',
-  description: 'Demonstrates useExternalState with @apostoli/use-external-state/next',
+  title: '@1apostoli/use-external-state • Next Query Params',
+  description: 'Demonstrates useExternalState with @1apostoli/use-external-state/next',
 };
 
 import type { ReactNode } from 'react';

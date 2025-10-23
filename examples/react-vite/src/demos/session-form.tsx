@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { useExternalState, SessionStorageStore } from '@apostoli/use-external-state';
+import { useExternalState, SessionStorageStore } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
 const draftSchema = z.object({
