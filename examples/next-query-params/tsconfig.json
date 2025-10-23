@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "rootDir": "../../",
+    "paths": {
+      "@apostoli/use-external-state": ["../../packages/use-external-state/src/index.ts"],
+      "@apostoli/use-external-state/*": ["../../packages/use-external-state/src/*"],
+      "@apostoli/use-external-state/next": [
+        "../../packages/use-external-state-next/src/index.ts"
+      ]
+    },
+    "allowJs": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "module": "esnext"
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*",
+    "pages/**/*",
+    "components/**/*",
+    ".next/types/**/*.ts",
+    "../../packages/use-external-state/src/**/*",
+    "../../packages/use-external-state-next/src/**/*"
+  ],
+  "exclude": ["node_modules"]
+}

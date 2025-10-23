@@ -1,0 +1,27 @@
+{
+  "name": "basic-local-storage",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --workspace-root run build",
+    "dev": "vite",
+    "prebuild": "pnpm --workspace-root run build",
+    "build": "vite build",
+    "prepreview": "pnpm --workspace-root run build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@apostoli/use-external-state": "workspace:*",
+    "zod": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.21"
+  }
+}

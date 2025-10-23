@@ -1,0 +1,25 @@
+{
+  "name": "next-query-params",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "predev": "pnpm --workspace-root run build",
+    "dev": "next dev",
+    "prebuild": "pnpm --workspace-root run build",
+    "build": "next build",
+    "prestart": "pnpm --workspace-root run build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "14.2.10",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@apostoli/use-external-state/next": "workspace:*",
+    "@apostoli/use-external-state": "workspace:*",
+    "zod": "^4.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

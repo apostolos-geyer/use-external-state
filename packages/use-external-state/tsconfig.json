@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-ts",
+    "rootDir": ".",
+    "jsx": "react-jsx",
+    "types": ["vitest/globals"],
+    "composite": false,
+    "incremental": false,
+    "emitDeclarationOnly": false
+  },
+  "include": [
+    "src",
+    "tests",
+    "*.config.*",
+    "package.json",
+    "vitest.setup.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["build", "dist-ts", "node_modules", "tsup.config.ts"]
+}

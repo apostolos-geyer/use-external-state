@@ -1,5 +1,8 @@
 node_modules
 dist
+build
+packages/**/build
+packages/**/dist-ts
 coverage
 *.log
 .DS_Store

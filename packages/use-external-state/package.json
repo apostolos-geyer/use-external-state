@@ -1,0 +1,63 @@
+{
+  "name": "@apostoli/use-external-state",
+  "version": "0.1.0",
+  "description": "React hook for syncing browser-backed state with Zod validation",
+  "type": "module",
+  "types": "build/legacy/index.d.ts",
+  "main": "build/legacy/index.cjs",
+  "module": "build/legacy/index.js",
+  "react-native": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./build/modern/index.d.ts",
+        "default": "./build/modern/index.js"
+      },
+      "require": {
+        "types": "./build/modern/index.d.cts",
+        "default": "./build/modern/index.cjs"
+      }
+    },
+    "./client-only": {
+      "import": {
+        "types": "./build/modern/client-only.d.ts",
+        "default": "./build/modern/client-only.js"
+      },
+      "require": {
+        "types": "./build/modern/client-only.d.cts",
+        "default": "./build/modern/client-only.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "build",
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup --config tsup.config.ts",
+    "clean": "rimraf build dist-ts",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19"
+  },
+  "dependencies": {
+    "zod": "^4.0.1"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "jsdom": "^24.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
