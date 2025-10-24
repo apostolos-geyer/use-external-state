@@ -39,23 +39,64 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-
       - name: Build
         run: pnpm run build
 
       - name: Test
         run: pnpm run test
 
-      - name: Bump package versions (minor)
+      - name: Determine changed packages
+        id: changed
         run: |
-          pnpm --filter @1apostoli/use-external-state version minor --no-git-tag-version
-          pnpm --filter @1apostoli/use-external-state-next version minor --no-git-tag-version
-          pnpm install --lockfile-only
-          if git diff --quiet; then
-            echo "SHOULD_PUBLISH=false" >> "$GITHUB_ENV"
-          else
-            echo "SHOULD_PUBLISH=true" >> "$GITHUB_ENV"
+          set -eo pipefail
+          echo "SHOULD_PUBLISH=false" >> "$GITHUB_ENV"
+          git fetch origin trunk --depth=1 || true
+          CHANGED_FILES=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" || true)
+          if [ -z "$CHANGED_FILES" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/trunk...HEAD || true)
           fi
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "changed_packages=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$CHANGED_FILES" > .changed-files
+          CHANGED_PACKAGES=$(node <<'NODE'
+const fs = require('fs');
+const { execSync } = require('child_process');
+const changed = fs.readFileSync('.changed-files', 'utf8').split(/\r?\n/).filter(Boolean);
+const list = JSON.parse(execSync('pnpm ls --depth=-1 --json', { encoding: 'utf8' }));
+const repoRoot = process.cwd();
+const packages = new Set();
+for (const pkg of list) {
+  if (!pkg.path) continue;
+  const relative = pkg.path.startsWith(repoRoot) ? pkg.path.slice(repoRoot.length + 1) : pkg.path;
+  for (const file of changed) {
+    if (file.startsWith(relative + '/')) {
+      packages.add(pkg.name);
+      break;
+    }
+  }
+}
+console.log([...packages].join(' '));
+NODE
+)
+          rm -f .changed-files
+          if [ -z "$CHANGED_PACKAGES" ]; then
+            echo "changed_packages=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed_packages=$CHANGED_PACKAGES" >> "$GITHUB_OUTPUT"
+          echo "SHOULD_PUBLISH=true" >> "$GITHUB_ENV"
+
+      - name: Bump package versions (minor)
+        if: steps.changed.outputs.changed_packages != ''
+        env:
+          CHANGED_PACKAGES: ${{ steps.changed.outputs.changed_packages }}
+        run: |
+          for pkg in $CHANGED_PACKAGES; do
+            pnpm --filter "$pkg" version minor --no-git-tag-version
+          done
+          pnpm install --lockfile-only
 
       - name: Commit version bump
         if: env.SHOULD_PUBLISH == 'true'
@@ -80,8 +121,8 @@ jobs:
         run: |
           core_version=$(node -p "require('./packages/use-external-state/package.json').version")
           next_version=$(node -p "require('./packages/use-external-state-next/package.json').version")
-          git tag -a \"@1apostoli/use-external-state@${core_version}\" -m \"Release @1apostoli/use-external-state ${core_version}\"
-          git tag -a \"@1apostoli/use-external-state-next@${next_version}\" -m \"Release @1apostoli/use-external-state-next ${next_version}\"
+          git tag -a "@1apostoli/use-external-state@${core_version}" -m "Release @1apostoli/use-external-state ${core_version}"
+          git tag -a "@1apostoli/use-external-state-next@${next_version}" -m "Release @1apostoli/use-external-state-next ${next_version}"
 
       - name: Push changes
         if: env.SHOULD_PUBLISH == 'true'
