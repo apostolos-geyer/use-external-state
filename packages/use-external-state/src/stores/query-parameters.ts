@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import type { ExternalStateAdapter, ExternalStateStore } from '../types';
 import { createStoreEmitter } from '../emitter';
-import { defaultParse, normalizeValue, type SerializedRecord } from '../internal/query-params';
+import {
+  defaultParse,
+  normalizeValue,
+  type SerializedRecord,
+} from '../internal/query-params';
 
 const DEFAULT_HISTORY: 'replace' | 'push' = 'replace';
 
@@ -51,71 +55,68 @@ export function QueryParameterStore<TValue>(
         return parsed === undefined ? undefined : (parsed as TValue);
       }, []);
 
-      const write = useCallback<ExternalStateStore<TValue>['write']>(
-        (value) => {
-          if (!isBrowser()) {
-            return;
-          }
+      const write = useCallback<ExternalStateStore<TValue>['write']>((value) => {
+        if (!isBrowser()) {
+          return;
+        }
 
-          const preserve = preserveRef.current ?? true;
-          const baseParams = preserve
-            ? new URLSearchParams(window.location.search)
-            : new URLSearchParams();
+        const preserve = preserveRef.current ?? true;
+        const baseParams = preserve
+          ? new URLSearchParams(window.location.search)
+          : new URLSearchParams();
 
-          managedKeysRef.current.forEach((key) => baseParams.delete(key));
+        managedKeysRef.current.forEach((key) => baseParams.delete(key));
 
-          const nextKeys = new Set<string>();
+        const nextKeys = new Set<string>();
 
-          if (value !== undefined) {
-            const serializer = serializeRef.current;
-            const mapped: SerializedRecord = serializer
-              ? serializer(value)
-              : normalizeValue(value);
+        if (value !== undefined) {
+          const serializer = serializeRef.current;
+          const mapped: SerializedRecord = serializer
+            ? serializer(value)
+            : normalizeValue(value);
 
-            Object.entries(mapped).forEach(([key, entry]) => {
-              baseParams.delete(key);
-              nextKeys.add(key);
+          Object.entries(mapped).forEach(([key, entry]) => {
+            baseParams.delete(key);
+            nextKeys.add(key);
 
-              if (entry === undefined) {
-                return;
-              }
-              if (entry === null) {
-                baseParams.set(key, 'null');
-                return;
-              }
-              if (Array.isArray(entry)) {
-                entry.forEach((item) =>
-                  baseParams.append(key, item === null ? 'null' : item),
-                );
-                return;
-              }
-              baseParams.set(key, entry);
-            });
-          }
+            if (entry === undefined) {
+              return;
+            }
+            if (entry === null) {
+              baseParams.set(key, 'null');
+              return;
+            }
+            if (Array.isArray(entry)) {
+              entry.forEach((item) =>
+                baseParams.append(key, item === null ? 'null' : item),
+              );
+              return;
+            }
+            baseParams.set(key, entry);
+          });
+        }
 
-          managedKeysRef.current = nextKeys;
+        managedKeysRef.current = nextKeys;
 
-          const serialized = baseParams.toString();
+        const serialized = baseParams.toString();
 
-          if (serialized === lastSerializedRef.current) {
-            return;
-          }
+        if (serialized === lastSerializedRef.current) {
+          return;
+        }
 
-          lastSerializedRef.current = serialized;
-          const pathname = window.location.pathname;
-          const href = serialized ? `${pathname}?${serialized}` : pathname;
-          const mode = historyRef.current ?? DEFAULT_HISTORY;
+        lastSerializedRef.current = serialized;
+        const pathname = window.location.pathname;
+        const href = serialized ? `${pathname}?${serialized}` : pathname;
+        const mode = historyRef.current ?? DEFAULT_HISTORY;
 
-          if (mode === 'push') {
-            window.history.pushState(null, '', href);
-          } else {
-            window.history.replaceState(null, '', href);
-          }
+        if (mode === 'push') {
+          window.history.pushState(null, '', href);
+        } else {
+          window.history.replaceState(null, '', href);
+        }
 
-          emitterRef.current.emit();
-        },
-        [],
-      );
+        emitterRef.current.emit();
+      }, []);
 
       const subscribe = useCallback<ExternalStateStore<TValue>['subscribe']>(
         (listener) => {

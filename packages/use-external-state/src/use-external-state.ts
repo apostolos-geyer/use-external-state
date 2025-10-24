@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'react';
 import { z } from 'zod';
 
-import { createDebouncer, type DebounceOptions, type DebouncedFunction } from './debounce';
+import {
+  createDebouncer,
+  type DebounceOptions,
+  type DebouncedFunction,
+} from './debounce';
 import { createStoreEmitter } from './emitter';
 import type {
   AnySchema,
@@ -588,7 +592,11 @@ export function useExternalState<
     const pending = pendingEffectsRef.current;
     pendingEffectsRef.current = {};
 
-    if (pending.defaultValue?.present && store.isAvailable() && snapshot.source === 'default') {
+    if (
+      pending.defaultValue?.present &&
+      store.isAvailable() &&
+      snapshot.source === 'default'
+    ) {
       const valueToPersist = pending.defaultValue.value;
       debouncedWriter?.cancel();
       pendingWriteRef.current = null;

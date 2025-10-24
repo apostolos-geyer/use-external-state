@@ -1,17 +1,26 @@
 'use client';
 
-import { createContext, use, useMemo, type ComponentType, type PropsWithChildren, type JSX } from 'react';
+import {
+  createContext,
+  use,
+  useMemo,
+  type ComponentType,
+  type PropsWithChildren,
+  type JSX,
+} from 'react';
 import type { z } from 'zod';
 
-import type { ExternalStateAdapter, UseExternalStateOptions, UseExternalStateResult } from './types';
+import type {
+  ExternalStateAdapter,
+  UseExternalStateOptions,
+  UseExternalStateResult,
+} from './types';
 import { useExternalState } from './use-external-state';
 
 type HookParams<TValue, TConfig> = {
   schema: z.ZodType<TValue>;
   options?: UseExternalStateOptions<z.ZodType<TValue>>;
-} & (TConfig extends undefined | void
-  ? { config?: TConfig }
-  : { config: TConfig });
+} & (TConfig extends undefined | void ? { config?: TConfig } : { config: TConfig });
 
 export type ExternalStateHook<TValue, TConfig> = (
   params: HookParams<TValue, TConfig>,
@@ -56,7 +65,8 @@ export function makeContext<TValue, TConfig>(
   function useExternalStateFromContext(): UseExternalStateResult<TValue> {
     const value = use(Context);
     if (value === null) {
-      const baseMessage = options?.missingProviderMessage ??
+      const baseMessage =
+        options?.missingProviderMessage ??
         'useExternalState context was accessed outside of its Provider.';
       const name = Context.displayName;
       throw new Error(name ? `${baseMessage} (${name})` : baseMessage);
@@ -98,8 +108,7 @@ export function makeHOC<TValue, TConfig>(
     };
 
     const componentName = Component.displayName ?? Component.name ?? 'Component';
-    Wrapped.displayName =
-      options?.displayName ?? `WithExternalState(${componentName})`;
+    Wrapped.displayName = options?.displayName ?? `WithExternalState(${componentName})`;
 
     return Wrapped;
   };

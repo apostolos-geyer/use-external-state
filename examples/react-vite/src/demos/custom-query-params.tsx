@@ -4,7 +4,6 @@ import type { JSX } from 'react';
 import { QueryParameterStore, useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
-
 const filtersSchema = z.object({
   search: z.string().default(''),
   page: z.coerce.number().min(1).default(1),

@@ -5,12 +5,7 @@ import type { JSX } from 'react';
 import { QueryParameterStore } from '@1apostoli/use-external-state-next';
 import { useExternalState } from '@1apostoli/use-external-state';
 
-import {
-  categories,
-  filtersSchema,
-  type Category,
-  type Filters,
-} from './filters-schema';
+import { categories, filtersSchema, type Category, type Filters } from './filters-schema';
 
 const store = QueryParameterStore<Filters>({
   history: 'replace',

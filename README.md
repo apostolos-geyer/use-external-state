@@ -76,11 +76,9 @@ const searchSchema = z.object({
 });
 
 export default function ProductsPage() {
-  const query = useExternalState(
-    QueryParameterStore(),
-    searchSchema,
-    { debounce: { wait: 300 } },
-  );
+  const query = useExternalState(QueryParameterStore(), searchSchema, {
+    debounce: { wait: 300 },
+  });
 
   return (
     <SearchInput
@@ -130,12 +128,12 @@ Cookies are polled every second for external changes. Set `pollIntervalMs: 0` to
 
 ### Adapters
 
-| Adapter                                                                                                            | Description                                              |
-| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| `LocalStorageStore({ key, serializer?, storage? })`                                                                            | JSON by default, cross-tab updates via `storage` events.                                 |
-| `SessionStorageStore({ key, serializer?, storage? })`                                                                          | Same API as local storage.                                                                     |
-| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                             | Serialises as URL-encoded JSON by default.                                                   |
-| `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })`                                                  | Browser history-backed query params for vanilla React apps.                                 |
+| Adapter                                                                                                                         | Description                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `LocalStorageStore({ key, serializer?, storage? })`                                                                             | JSON by default, cross-tab updates via `storage` events.                              |
+| `SessionStorageStore({ key, serializer?, storage? })`                                                                           | Same API as local storage.                                                            |
+| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                              | Serialises as URL-encoded JSON by default.                                            |
+| `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })`                                                   | Browser history-backed query params for vanilla React apps.                           |
 | `@1apostoli/use-external-state-next` `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse?, navigation? })` | Next.js App Router integration with optional history-only mode via `navigation.mode`. |
 
 ### Factories & context helpers
@@ -169,12 +167,20 @@ const withQueryState = makeHOC(useQueryState);
 // React 19 `use`
 function Search() {
   const state = QueryState.use();
-  return <input value={state.value.search} onChange={(event) => state.set.search(event.target.value)} />;
+  return (
+    <input
+      value={state.value.search}
+      onChange={(event) => state.set.search(event.target.value)}
+    />
+  );
 }
 
 // Higher-order component
 const SearchWithState = withQueryState(({ externalState }) => (
-  <input value={externalState.value.search} onChange={(event) => externalState.set.search(event.target.value)} />
+  <input
+    value={externalState.value.search}
+    onChange={(event) => externalState.set.search(event.target.value)}
+  />
 ));
 
 // Later in JSX

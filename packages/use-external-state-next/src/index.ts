@@ -159,26 +159,29 @@ export function QueryParameterStore<TValue>(
         [pathname, routerNavigate, searchParams],
       );
 
-      const subscribe = useCallback<ExternalStateStore<TValue>['subscribe']>((listener) => {
-        const unsubscribe = emitterRef.current.subscribe(listener);
-        if (!isBrowser()) {
+      const subscribe = useCallback<ExternalStateStore<TValue>['subscribe']>(
+        (listener) => {
+          const unsubscribe = emitterRef.current.subscribe(listener);
+          if (!isBrowser()) {
+            return () => {
+              unsubscribe();
+            };
+          }
+          const handlePopState = () => {
+            const current = window.location.search.replace(/^\?/, '');
+            if (current !== lastSerializedRef.current) {
+              lastSerializedRef.current = current;
+              emitterRef.current.emit();
+            }
+          };
+          window.addEventListener('popstate', handlePopState);
           return () => {
+            window.removeEventListener('popstate', handlePopState);
             unsubscribe();
           };
-        }
-        const handlePopState = () => {
-          const current = window.location.search.replace(/^\?/, '');
-          if (current !== lastSerializedRef.current) {
-            lastSerializedRef.current = current;
-            emitterRef.current.emit();
-          }
-        };
-        window.addEventListener('popstate', handlePopState);
-        return () => {
-          window.removeEventListener('popstate', handlePopState);
-          unsubscribe();
-        };
-      }, []);
+        },
+        [],
+      );
 
       const isAvailable = useCallback<ExternalStateStore<TValue>['isAvailable']>(
         () => isBrowser(),

@@ -90,9 +90,7 @@ describe('QueryParameterStore', () => {
     expect(result.current.value.search).toBe('bikes');
 
     const calls = routerReplace.mock.calls as RouterCall[];
-    expect(calls.some(([href]) => href === '/products?search=bikes&page=1')).toBe(
-      true,
-    );
+    expect(calls.some(([href]) => href === '/products?search=bikes&page=1')).toBe(true);
   });
 
   it('preserves unknown parameters by default', () => {
