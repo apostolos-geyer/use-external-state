@@ -8,7 +8,7 @@ React hook for managing state that lives outside the component tree while stayin
 - ✅ Supports `localStorage`, `sessionStorage`, cookies, and Next.js App Router search params out of the box
 - ✅ Keeps defaults, `null` vs `undefined`, and validation failures consistent
 - ✅ Stable, key-safe setters (`state.set.search`) with top-level helpers for whole-state updates
-- ✅ Debouncer utility for throttling expensive writes
+- ✅ Built-in debounced writes (via `options.debounce`) with a standalone helper when you need manual control
 - ✅ React 19 compiler-friendly: pure hooks, stable dependencies, and external store integration
 
 ## Installation
@@ -76,18 +76,22 @@ const searchSchema = z.object({
 });
 
 export default function ProductsPage() {
-  const query = useExternalState(QueryParameterStore(), searchSchema);
+  const query = useExternalState(
+    QueryParameterStore(),
+    searchSchema,
+    { debounce: { wait: 300 } },
+  );
 
   return (
     <SearchInput
       value={query.value.search}
-      onChange={query.debounce(query.set.search, { wait: 300 })}
+      onChange={(event) => query.set.search(event.target.value)}
     />
   );
 }
 ```
 
-The adapter automatically merges managed keys with other query parameters. Use `QueryParameterStore({ preserveUnknownKeys: false })` to opt out.
+The adapter automatically merges managed keys with other query parameters. Pair it with `options.debounce` (as above) to keep the UI responsive while batching router navigations. Set `QueryParameterStore({ navigation: { mode: 'history' } })` to update the URL without triggering a refetch, or `{ preserveUnknownKeys: false }` to opt out of merging.
 
 ## Cookies
 
@@ -113,7 +117,7 @@ Cookies are polled every second for external changes. Set `pollIntervalMs: 0` to
 - `options.defaultValue`: manual default when the schema cannot hydrate one from `undefined` (e.g. when every field is required).
 - `options.isEqual`: custom equality check to skip redundant writes. Defaults to a structural deep compare so schemas that create fresh objects (e.g. Zod) do not cause re-renders.
 - `options.onValidationError`: tap into validation issues before the hook falls back to the default.
-- `options.debounce`: base configuration for `result.debounce`.
+- `options.debounce`: debounce configuration for adapter writes. The hook updates `value` immediately while writes are scheduled with the supplied options.
 
 ### Return value
 
@@ -123,16 +127,59 @@ Cookies are polled every second for external changes. Set `pollIntervalMs: 0` to
 - `setAll(next | updater)`: alias for `setValue` for compatibility.
 - `merge(partial | updater)`: merge partial updates when the schema resolves to an object/array.
 - `status`: `{ kind: "idle" | "defaulted" | "error"; issues?: Issue[] }`
-- `debounce(fn, override?)`: create a debounced version of any callback. Combines `options.debounce` with per-call overrides.
 
 ### Adapters
 
 | Adapter                                                                                                            | Description                                              |
 | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| `LocalStorageStore({ key, serializer?, storage? })`                                                                | JSON by default, cross-tab updates via `storage` events. |
-| `SessionStorageStore({ key, serializer?, storage? })`                                                              | Same API as local storage.                               |
-| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                 | Serialises as URL-encoded JSON by default.               |
-| `@1apostoli/use-external-state-next` `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })` | Works with Next.js App Router (`next/navigation`).       |
+| `LocalStorageStore({ key, serializer?, storage? })`                                                                            | JSON by default, cross-tab updates via `storage` events.                                 |
+| `SessionStorageStore({ key, serializer?, storage? })`                                                                          | Same API as local storage.                                                                     |
+| `CookieStore({ name, attributes?, pollIntervalMs?, serializer? })`                                                             | Serialises as URL-encoded JSON by default.                                                   |
+| `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse? })`                                                  | Browser history-backed query params for vanilla React apps.                                 |
+| `@1apostoli/use-external-state-next` `QueryParameterStore({ history?, preserveUnknownKeys?, serialize?, parse?, navigation? })` | Next.js App Router integration with optional history-only mode via `navigation.mode`. |
+
+### Factories & context helpers
+
+```tsx
+import {
+  makeContext,
+  makeHook,
+  makeHOC,
+  QueryParameterStore,
+  type QueryParameterStoreConfig,
+} from '@1apostoli/use-external-state';
+import { z } from 'zod';
+
+const schema = z.object({ search: z.string().default('') });
+type QueryState = z.infer<typeof schema>;
+
+const useQueryState = makeHook<QueryState, QueryParameterStoreConfig<QueryState>>(
+  QueryParameterStore<QueryState>,
+);
+
+const QueryState = makeContext(useQueryState, { displayName: 'QueryState' });
+
+const withQueryState = makeHOC(useQueryState);
+
+// Provider usage
+<QueryState.Provider schema={schema} config={{ history: 'replace' }}>
+  <Search />
+</QueryState.Provider>;
+
+// React 19 `use`
+function Search() {
+  const state = QueryState.use();
+  return <input value={state.value.search} onChange={(event) => state.set.search(event.target.value)} />;
+}
+
+// Higher-order component
+const SearchWithState = withQueryState(({ externalState }) => (
+  <input value={externalState.value.search} onChange={(event) => externalState.set.search(event.target.value)} />
+));
+
+// Later in JSX
+<SearchWithState schema={schema} config={{ history: 'replace' }} />;
+```
 
 ### Debouncer helper
 
@@ -172,7 +219,6 @@ All demos live under `examples/`. Install dependencies at the repo root, then ru
 - `pnpm dev:session` – Vite app persisting a form draft in `sessionStorage`
 - `pnpm dev:cookie` – Vite app demonstrating `CookieStore`
 - `pnpm --filter next-query-params dev` – Next.js App Router example using `@1apostoli/use-external-state-next`
-- `pnpm --filter react-custom-query dev` – Vite app with a hand-rolled query-parameter adapter
 
 Each Vite demo automatically rebuilds the workspace package before launching. See `examples/README.md` for more details.
 

@@ -102,6 +102,50 @@ describe('useExternalState with LocalStorageStore', () => {
 
     expect(result.current.setValue).toBe(result.current.setAll);
   });
+
+  it('surfaces detailed Zod errors when defaults cannot be inferred', () => {
+    const strictSchema = z.object({ required: z.string() });
+    const strictStore = LocalStorageStore<z.output<typeof strictSchema>>({
+      key: 'strict',
+    });
+
+    expect(() =>
+      renderHook(() => useExternalState(strictStore, strictSchema)),
+    ).toThrowError(/Zod validation for `undefined`/);
+  });
+
+  it('debounces adapter writes when configured', async () => {
+    const { result } = renderHook(() =>
+      useExternalState<typeof schema, SearchState>(store, schema, {
+        debounce: { wait: 200 },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current.value.search).toBe('');
+    });
+
+    expect(window.localStorage.getItem('search')).toBe(JSON.stringify({ search: '' }));
+
+    vi.useFakeTimers();
+
+    act(() => {
+      result.current.set.search('alpha');
+    });
+
+    expect(result.current.value.search).toBe('alpha');
+    expect(window.localStorage.getItem('search')).toBe(JSON.stringify({ search: '' }));
+
+    vi.advanceTimersByTime(199);
+    expect(window.localStorage.getItem('search')).toBe(JSON.stringify({ search: '' }));
+
+    vi.advanceTimersByTime(1);
+    expect(window.localStorage.getItem('search')).toBe(
+      JSON.stringify({ search: 'alpha' }),
+    );
+
+    vi.useRealTimers();
+  });
 });
 
 describe('createDebouncer', () => {

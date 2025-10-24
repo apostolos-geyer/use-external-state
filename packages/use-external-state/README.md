@@ -6,7 +6,8 @@ examples.
 
 - **Install**: `pnpm add @1apostoli/use-external-state`
 - **Exports**: `useExternalState`, `LocalStorageStore`, `SessionStorageStore`,
-  `CookieStore`, `createDebouncer`, and keyed setter helpers.
+  `CookieStore`, `QueryParameterStore`, `createDebouncer`, `makeHook`,
+  `makeContext`, `makeHOC`, and keyed setter helpers.
 
 The package ships both modern (ESM) and legacy (CJS) bundles under
 `build/modern` and `build/legacy` respectively, and includes type declarations

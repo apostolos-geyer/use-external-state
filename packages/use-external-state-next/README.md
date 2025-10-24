@@ -25,7 +25,9 @@ const searchSchema = z.object({
 });
 
 export function ProductsSearch() {
-  const query = useExternalState(QueryParameterStore(), searchSchema);
+  const query = useExternalState(QueryParameterStore(), searchSchema, {
+    debounce: { wait: 300 },
+  });
 
   return (
     <input
@@ -36,4 +38,4 @@ export function ProductsSearch() {
 }
 ```
 
-`QueryParameterStore` keeps managed keys in sync with the Next.js router, merges unknown keys by default, and exposes history control (`push` or `replace`).
+`QueryParameterStore` keeps managed keys in sync with the Next.js router, merges unknown keys by default, and exposes history control (`push` or `replace`). Combine it with `options.debounce` to batch navigations, or switch to history-only updates via `QueryParameterStore({ navigation: { mode: 'history' } })` when you want to avoid triggering a refetch until you explicitly push to the router.

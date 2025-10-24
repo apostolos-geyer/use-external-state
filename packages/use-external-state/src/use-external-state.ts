@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'react';
 import { z } from 'zod';
 
-import { createDebouncer, type DebounceOptions } from './debounce';
+import { createDebouncer, type DebounceOptions, type DebouncedFunction } from './debounce';
+import { createStoreEmitter } from './emitter';
 import type {
   AnySchema,
   BasicSetter,
@@ -26,12 +27,16 @@ const DEFAULT_UNSET = Symbol('defaultUnset');
 interface Snapshot<TValue> {
   value: TValue;
   status: UseExternalStateStatus;
-  source: 'store' | 'default';
+  source: 'store' | 'default' | 'pending';
 }
 
 interface PendingEffects<TValue> {
   defaultValue?: { present: true; value: TValue };
   error?: ValidationErrorPayload;
+}
+
+interface PendingWrite<TValue> {
+  value: TValue;
 }
 
 function isRecordLike(value: unknown): value is Record<PropertyKey, unknown> {
@@ -135,6 +140,38 @@ function mergeDebounceOptions(
   }
 
   return merged;
+}
+
+function normalizeDebounceConfig(
+  config: DebounceOptions | undefined,
+): DebounceOptions | undefined {
+  if (!config) {
+    return undefined;
+  }
+
+  const normalized = mergeDebounceOptions(undefined, config);
+  if (normalized.wait <= 0) {
+    return undefined;
+  }
+  return normalized;
+}
+
+function debounceOptionsEqual(
+  a: DebounceOptions | undefined,
+  b: DebounceOptions | undefined,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  return (
+    a.wait === b.wait &&
+    a.leading === b.leading &&
+    a.trailing === b.trailing &&
+    a.maxWait === b.maxWait
+  );
 }
 
 function createKeyedSetters<TValue>(
@@ -302,12 +339,17 @@ function resolveDefaultValue<TSchema extends AnySchema>(
     return fromEmptyObject.data;
   }
 
-  throw new Error(
-    [
-      'useExternalState could not infer a default value from the provided schema.',
-      'Pass `options.defaultValue` or ensure the schema accepts `undefined` input with a deterministic default.',
-    ].join(' '),
-  );
+  const messages = [
+    'useExternalState could not infer a default value from the provided schema.',
+    'Pass `options.defaultValue` or ensure the schema accepts `undefined` input with a deterministic default.',
+    `Zod validation for \`undefined\`: ${fromUndefined.error.message}`,
+  ];
+
+  if (!fromEmptyObject.success) {
+    messages.push(`Zod validation for \`{}\`: ${fromEmptyObject.error.message}`);
+  }
+
+  throw new Error(messages.join(' '));
 }
 
 function getServerSnapshot<TValue>(defaultValue: TValue): Snapshot<TValue> {
@@ -359,19 +401,71 @@ export function useExternalState<
 
   const pendingEffectsRef = useRef<PendingEffects<TValue>>({});
   const lastValueRef = useRef<TValue>(defaultValueRef.current as TValue);
-  const baseDebounceOptionsRef = useRef<DebounceOptions | undefined>(options?.debounce);
-  baseDebounceOptionsRef.current = options?.debounce;
+  const pendingWriteRef = useRef<PendingWrite<TValue> | null>(null);
   const snapshotRef = useRef<Snapshot<TValue>>(
     getServerSnapshot(defaultValueRef.current as TValue),
   );
   const supportsMergeRef = useRef<boolean>(
     isRecordLike(defaultValueRef.current as TValue),
   );
+  const localEmitterRef = useRef<ReturnType<typeof createStoreEmitter> | null>(null);
+  const debounceConfig = options?.debounce;
+  const normalizedDebounceRef = useRef<DebounceOptions | undefined>(undefined);
+  const normalizedDebounce = useMemo(() => {
+    const normalized = normalizeDebounceConfig(debounceConfig);
+    if (!debounceOptionsEqual(normalizedDebounceRef.current, normalized)) {
+      normalizedDebounceRef.current = normalized;
+    }
+    return normalizedDebounceRef.current;
+  }, [debounceConfig]);
+  if (normalizedDebounce && localEmitterRef.current === null) {
+    localEmitterRef.current = createStoreEmitter();
+  } else if (!normalizedDebounce && localEmitterRef.current !== null) {
+    localEmitterRef.current = null;
+  }
+  const debouncedWriter = useMemo<DebouncedFunction<[TValue], void> | null>(() => {
+    if (!normalizedDebounce) {
+      return null;
+    }
+    const debouncer = createDebouncer(normalizedDebounce);
+    return debouncer<[TValue], void>((value) => {
+      store.write(value);
+      pendingWriteRef.current = null;
+    });
+  }, [normalizedDebounce, store]);
+
+  useEffect(() => {
+    if (!debouncedWriter) {
+      return;
+    }
+    return () => {
+      debouncedWriter.flush();
+      debouncedWriter.cancel();
+    };
+  }, [debouncedWriter]);
 
   const getSnapshot = useCallback((): Snapshot<TValue> => {
     const equalityCheck = options?.isEqual ?? defaultIsEqual;
     const fallback = defaultValueRef.current as TValue;
     const currentSnapshot = snapshotRef.current;
+    const pendingWrite = pendingWriteRef.current;
+
+    if (pendingWrite !== null) {
+      const pendingValue = pendingWrite.value;
+      if (
+        currentSnapshot.source === 'pending' &&
+        equalityCheck(currentSnapshot.value, pendingValue)
+      ) {
+        return currentSnapshot;
+      }
+      const nextSnapshot: Snapshot<TValue> = {
+        value: pendingValue,
+        status: { kind: 'idle' },
+        source: 'pending',
+      };
+      snapshotRef.current = nextSnapshot;
+      return nextSnapshot;
+    }
 
     if (!store.isAvailable()) {
       if (
@@ -461,7 +555,20 @@ export function useExternalState<
   }, [options?.isEqual, schema, store]);
 
   const subscribe = useCallback<ExternalStateStore<TValue>['subscribe']>(
-    (listener) => store.subscribe(listener),
+    (listener) => {
+      const unsubscribeStore = store.subscribe(listener);
+      const localEmitter = localEmitterRef.current;
+      if (!localEmitter) {
+        return () => {
+          unsubscribeStore();
+        };
+      }
+      const unsubscribeLocal = localEmitter.subscribe(listener);
+      return () => {
+        unsubscribeLocal();
+        unsubscribeStore();
+      };
+    },
     [store],
   );
 
@@ -478,22 +585,29 @@ export function useExternalState<
     const pending = pendingEffectsRef.current;
     pendingEffectsRef.current = {};
 
-    if (pending.defaultValue?.present && store.isAvailable()) {
+    if (pending.defaultValue?.present && store.isAvailable() && snapshot.source === 'default') {
       const valueToPersist = pending.defaultValue.value;
-      Promise.resolve().then(() => {
-        store.write(valueToPersist);
-      });
+      debouncedWriter?.cancel();
+      pendingWriteRef.current = null;
+      store.write(valueToPersist);
     }
 
     if (pending.error && onValidationError) {
       onValidationError(pending.error);
     }
-  }, [snapshot, store, onValidationError]);
+  }, [snapshot, store, onValidationError, debouncedWriter]);
 
   const setValue = useCallback<BasicSetter<TValue>>(
     (next) => {
       if (!store.isAvailable()) {
         return;
+      }
+
+      if (pendingEffectsRef.current.defaultValue) {
+        pendingEffectsRef.current = {
+          ...pendingEffectsRef.current,
+          defaultValue: undefined,
+        };
       }
 
       const current = lastValueRef.current ?? (defaultValueRef.current as TValue);
@@ -520,10 +634,25 @@ export function useExternalState<
       }
 
       const nextValue = validation.data as TValue;
-      store.write(nextValue);
       lastValueRef.current = nextValue;
+      const nextSnapshot: Snapshot<TValue> = {
+        value: nextValue,
+        status: { kind: 'idle' },
+        source: debouncedWriter ? 'pending' : 'store',
+      };
+      snapshotRef.current = nextSnapshot;
+      if (debouncedWriter) {
+        pendingWriteRef.current = { value: nextValue };
+        localEmitterRef.current?.emit();
+        debouncedWriter(nextValue);
+        return;
+      }
+
+      pendingWriteRef.current = null;
+      localEmitterRef.current?.emit();
+      store.write(nextValue);
     },
-    [options?.isEqual, schema, store],
+    [options?.isEqual, schema, store, debouncedWriter],
   );
 
   const keySetters = useMemo<KeyedSetters<TValue>>(
@@ -538,14 +667,6 @@ export function useExternalState<
     return createMergeSetter(setValue);
   }, [setValue]);
 
-  const debounce = useCallback<UseExternalStateResult<TValue>['debounce']>(
-    (fn, override) => {
-      const config = mergeDebounceOptions(baseDebounceOptionsRef.current, override);
-      return createDebouncer(config)(fn);
-    },
-    [],
-  );
-
   const result: UseExternalStateResult<TValue> = useMemo(() => {
     const canMerge = supportsMergeRef.current && isRecordLike(snapshot.value);
 
@@ -556,9 +677,8 @@ export function useExternalState<
       setAll: setValue,
       merge: canMerge ? mergeSetter : undefined,
       status: snapshot.status,
-      debounce,
     } satisfies UseExternalStateResult<TValue>;
-  }, [debounce, keySetters, mergeSetter, setValue, snapshot]);
+  }, [keySetters, mergeSetter, setValue, snapshot]);
 
   return result;
 }

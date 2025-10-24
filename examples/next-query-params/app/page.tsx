@@ -30,7 +30,7 @@ export default function Page(): JSX.Element {
 }
 
 function FiltersPage(): JSX.Element {
-  const filters = useExternalState(store, filtersSchema);
+  const filters = useExternalState(store, filtersSchema, { debounce: { wait: 500 } });
   return (
     <main style={{ display: 'grid', gap: '1rem', maxWidth: 640 }}>
       <h1>Next.js Query Parameters + Zod</h1>
@@ -93,7 +93,7 @@ function FiltersPage(): JSX.Element {
 
       <button
         type="button"
-        onClick={() => filters.setValue(() => filtersSchema.parse(undefined))}
+        onClick={() => filters.setValue(() => filtersSchema.parse({}))}
         style={{ width: 'fit-content' }}
       >
         Reset to defaults

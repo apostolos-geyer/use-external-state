@@ -5,18 +5,18 @@ export interface DebounceOptions {
   maxWait?: number;
 }
 
-export interface DebouncedFunction<T extends (...args: unknown[]) => unknown> {
-  (...args: Parameters<T>): ReturnType<T> | undefined;
+export interface DebouncedFunction<TArgs extends unknown[], TResult> {
+  (...args: TArgs): TResult | undefined;
   cancel(): void;
-  flush(): ReturnType<T> | undefined;
+  flush(): TResult | undefined;
   pending(): boolean;
 }
 
 export function createDebouncer(defaultOptions: DebounceOptions) {
-  return function debounce<T extends (...args: unknown[]) => unknown>(
-    fn: T,
+  return function debounce<TArgs extends unknown[], TResult>(
+    fn: (...args: TArgs) => TResult,
     override?: Partial<DebounceOptions>,
-  ): DebouncedFunction<T> {
+  ): DebouncedFunction<TArgs, TResult> {
     const options: DebounceOptions = {
       ...defaultOptions,
       ...override,
@@ -28,19 +28,19 @@ export function createDebouncer(defaultOptions: DebounceOptions) {
     const maxWait = options.maxWait;
 
     let timerId: ReturnType<typeof setTimeout> | undefined;
-    let lastArgs: Parameters<T> | undefined;
+    let lastArgs: TArgs | undefined;
     let lastCallTime: number | undefined;
     let lastInvokeTime = 0;
-    let result: ReturnType<T> | undefined;
+    let result: TResult | undefined;
 
-    const invoke = (time: number): ReturnType<T> | undefined => {
+    const invoke = (time: number): TResult | undefined => {
       lastInvokeTime = time;
       const args = lastArgs;
       lastArgs = undefined;
       if (!args) {
         return result;
       }
-      result = fn(...args) as ReturnType<T>;
+      result = fn(...args);
       return result;
     };
 
@@ -79,7 +79,7 @@ export function createDebouncer(defaultOptions: DebounceOptions) {
         : timeWaiting;
     };
 
-    const trailingEdge = (time: number): ReturnType<T> | undefined => {
+    const trailingEdge = (time: number): TResult | undefined => {
       timerId = undefined;
       if (trailing && lastArgs) {
         return invoke(time);
@@ -98,7 +98,7 @@ export function createDebouncer(defaultOptions: DebounceOptions) {
       return undefined;
     };
 
-    const leadingEdge = (time: number): ReturnType<T> | undefined => {
+    const leadingEdge = (time: number): TResult | undefined => {
       lastInvokeTime = time;
       startTimer(wait);
       if (leading) {
@@ -117,13 +117,13 @@ export function createDebouncer(defaultOptions: DebounceOptions) {
       lastInvokeTime = 0;
     };
 
-    const flush = (): ReturnType<T> | undefined => {
+    const flush = (): TResult | undefined => {
       return timerId === undefined ? result : trailingEdge(Date.now());
     };
 
     const pending = (): boolean => timerId !== undefined;
 
-    const debounced = (...args: Parameters<T>): ReturnType<T> | undefined => {
+    const debounced = (...args: TArgs): TResult | undefined => {
       const time = Date.now();
       const isInvoking = shouldInvoke(time);
 

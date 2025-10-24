@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - trunk
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.15.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Bump package versions (minor)
+        run: |
+          pnpm --filter @1apostoli/use-external-state version minor --no-git-tag-version
+          pnpm --filter @1apostoli/use-external-state-next version minor --no-git-tag-version
+          pnpm install --lockfile-only
+          if git diff --quiet; then
+            echo "SHOULD_PUBLISH=false" >> "$GITHUB_ENV"
+          else
+            echo "SHOULD_PUBLISH=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Commit version bump
+        if: env.SHOULD_PUBLISH == 'true'
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          git commit -am "chore: release workspace packages"
+
+      - name: Publish packages
+        if: env.SHOULD_PUBLISH == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          pnpm publish --filter @1apostoli/use-external-state --no-git-checks --access public
+          pnpm publish --filter @1apostoli/use-external-state-next --no-git-checks --access public
+
+      - name: Create release tags
+        if: env.SHOULD_PUBLISH == 'true'
+        run: |
+          core_version=$(node -p "require('./packages/use-external-state/package.json').version")
+          next_version=$(node -p "require('./packages/use-external-state-next/package.json').version")
+          git tag -a \"@1apostoli/use-external-state@${core_version}\" -m \"Release @1apostoli/use-external-state ${core_version}\"
+          git tag -a \"@1apostoli/use-external-state-next@${next_version}\" -m \"Release @1apostoli/use-external-state-next ${next_version}\"
+
+      - name: Push changes
+        if: env.SHOULD_PUBLISH == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD:trunk --follow-tags

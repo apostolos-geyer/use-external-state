@@ -1,10 +1,9 @@
 'use client';
 
 import type { JSX } from 'react';
-import { useExternalState } from '@1apostoli/use-external-state';
+import { QueryParameterStore, useExternalState } from '@1apostoli/use-external-state';
 import { z } from 'zod';
 
-import { useQueryParameterAdapter } from './utils/queryAdapter';
 
 const filtersSchema = z.object({
   search: z.string().default(''),
@@ -24,6 +23,12 @@ function toObject(value: Filters): Record<string, string | string[] | null | und
   };
 }
 
+const queryAdapter = QueryParameterStore<Filters>({
+  history: 'replace',
+  serialize: toObject,
+  parse: fromParams,
+});
+
 function fromParams(params: URLSearchParams): Filters | undefined {
   const draft = {
     search: params.get('search') ?? undefined,
@@ -38,14 +43,10 @@ function fromParams(params: URLSearchParams): Filters | undefined {
 }
 
 export default function CustomQueryParamsDemo(): JSX.Element {
-  const adapter = useQueryParameterAdapter<Filters>('react-custom', {
-    history: 'replace',
-    keys: ['search', 'page', 'tags'],
-    serialize: toObject,
-    deserialize: fromParams,
-  });
-
-  const filters = useExternalState<typeof filtersSchema, Filters>(adapter, filtersSchema);
+  const filters = useExternalState<typeof filtersSchema, Filters>(
+    queryAdapter,
+    filtersSchema,
+  );
 
   const toggleTag = (tag: string) => {
     filters.setValue((current) => {

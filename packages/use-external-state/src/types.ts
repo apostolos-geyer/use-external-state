@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { DebouncedFunction, DebounceOptions } from './debounce';
+import type { DebounceOptions } from './debounce';
 
 export type AnySchema = z.ZodTypeAny;
 
@@ -62,8 +62,4 @@ export interface UseExternalStateResult<TValue> {
   setAll: BasicSetter<TValue>;
   merge: MergeSetter<TValue> | undefined;
   status: UseExternalStateStatus;
-  debounce: <T extends (...args: unknown[]) => unknown>(
-    fn: T,
-    override?: Partial<DebounceOptions>,
-  ) => DebouncedFunction<T>;
 }
