@@ -405,6 +405,7 @@ export function useExternalState<
   const snapshotRef = useRef<Snapshot<TValue>>(
     getServerSnapshot(defaultValueRef.current as TValue),
   );
+  const serverSnapshotRef = useRef<Snapshot<TValue>>(snapshotRef.current);
   const supportsMergeRef = useRef<boolean>(
     isRecordLike(defaultValueRef.current as TValue),
   );
@@ -572,8 +573,10 @@ export function useExternalState<
     [store],
   );
 
-  const snapshot = useSyncExternalStore(subscribe, getSnapshot, () =>
-    getServerSnapshot(defaultValueRef.current as TValue),
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => serverSnapshotRef.current,
   );
 
   useEffect(() => {
