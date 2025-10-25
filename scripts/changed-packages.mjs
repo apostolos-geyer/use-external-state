@@ -3,11 +3,14 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [,, baseRef = 'origin/trunk', headRef = 'HEAD'] = process.argv;
+const [, , baseRef = 'origin/trunk', headRef = 'HEAD'] = process.argv;
 console.error(`[changed-packages] baseRef=${baseRef} headRef=${headRef}`);
 
 function run(command) {
-  return execSync(command, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  return execSync(command, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim();
 }
 
 function getChangedFiles(base, head) {

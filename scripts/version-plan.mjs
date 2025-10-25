@@ -14,7 +14,10 @@ if (packages.length === 0) {
 }
 
 function run(command) {
-  return execSync(command, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  return execSync(command, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim();
 }
 
 const repoRoot = run('git rev-parse --show-toplevel');
@@ -111,7 +114,9 @@ for (const name of packages) {
       console.error(`[version-plan] ${name}: will bump version`);
     }
   } catch (error) {
-    console.error(`[version-plan] ${name}: error ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `[version-plan] ${name}: error ${error instanceof Error ? error.message : String(error)}`,
+    );
     publish.push(name);
   }
 }
